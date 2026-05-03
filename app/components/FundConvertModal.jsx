@@ -65,8 +65,7 @@ export default function FundConvertModal({
 
   const outValid = Number.isFinite(outAmt) && outAmt > 0 && outAmt <= maxOut;
   const inValid = Number.isFinite(inAmt) && inAmt > 0;
-  const relationValid = outValid && inValid && outAmt >= inAmt;
-  const canSubmit = !!fund?.code && !!inFund?.code && relationValid && !!confirmDate;
+  const canSubmit = !!fund?.code && !!inFund?.code && outValid && inValid && !!confirmDate;
 
   useEffect(() => {
     if (nestedModalOpen) {
@@ -209,7 +208,7 @@ export default function FundConvertModal({
               />
             </div>
             <div className="muted" style={{ marginTop: 6, fontSize: 12 }}>
-              * {hintMax}，且需大于等于转入金额
+              * {hintMax}
             </div>
           </div>
 
@@ -244,7 +243,7 @@ export default function FundConvertModal({
             <label className="muted" style={{ display: 'block', marginBottom: 8, fontSize: '14px' }}>
               转入金额 <span style={{ color: 'var(--danger)' }}>*</span>
             </label>
-            <div style={{ border: (!inAmount || !inValid || (outValid && inValid && !(inAmt <= outAmt))) ? '1px solid var(--danger)' : '1px solid var(--border)', borderRadius: 12 }}>
+            <div style={{ border: (!inAmount || !inValid) ? '1px solid var(--danger)' : '1px solid var(--border)', borderRadius: 12 }}>
               <NumericInput
                 value={inAmount}
                 onChange={setInAmount}
@@ -252,9 +251,6 @@ export default function FundConvertModal({
                 min={0}
                 placeholder="请输入转入金额"
               />
-            </div>
-            <div className="muted" style={{ marginTop: 6, fontSize: 12 }}>
-              * 需小于等于转出金额
             </div>
           </div>
 

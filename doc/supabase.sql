@@ -53,7 +53,7 @@ grant execute on function public.update_user_config_partial(jsonb, text) to auth
 grant execute on function public.update_user_config_partial(jsonb, text) to service_role;
 
 -- 开启实时订阅 Publication（必须，否则 Supabase Realtime 无法监听 user_configs 表变更）
-drop publication if exists supabase_realtime for table public.user_configs;
+drop publication if exists supabase_realtime;
 create publication supabase_realtime for table public.user_configs;
 
 -- v1.0.0 版本更新关联板块表
