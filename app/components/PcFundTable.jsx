@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/dialog';
 import { DragIcon, SettingsIcon, StarIcon, TrashIcon, ResetIcon, FolderPlusIcon, LinkIcon } from './Icons';
 import { fetchFundPeriodReturns, fetchRelatedSectors, fetchRelatedSectorLiveQuote } from '@/app/api/fund';
+import { isEtfFeederFund } from '@/app/data/etfFeederMap';
+import { getFundSector } from '@/app/data/fundSectorMap';
 import { storageStore } from '../stores';
 import { asyncPool } from '@/app/lib/asyncHelper';
 import MoveGroupModal from './MoveGroupModal';
@@ -187,6 +189,7 @@ function SortableRow({ row, children, isTableDragging, disabled, enableAnimation
  * @param {boolean} [props.masked] - 是否隐藏持仓相关金额
  * @param {string} [props.relatedSectorSessionKey] - 登录用户 id（未登录传空），用于关联板块查询缓存与登录后重新拉取
  * @param {(row: any) => void} [props.onFundTagsClick] - 点击标签列时打开编辑标签
+ * @param {(fund: any) => void} [props.onViewEtfHoldings] - 点击查看ETF持仓
  */
 export default function PcFundTable({
   data = [],
@@ -213,6 +216,7 @@ export default function PcFundTable({
   masked = false,
   relatedSectorSessionKey = '',
   onFundTagsClick,
+  onViewEtfHoldings,
 }) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -760,8 +764,14 @@ export default function PcFundTable({
   const withRelatedSectorFund = useCallback(
     (row) => {
       if (!row || !row.code) return row;
-      const rawValue = relatedSectorByCode?.[row.code] ?? relatedSectorCacheRef.current.get(row.code) ?? '';
-      const relatedSector = rawValue != null ? String(rawValue).trim() : '';
+      let rawValue = relatedSectorByCode?.[row.code] ?? relatedSectorCacheRef.current.get(row.code) ?? '';
+      rawValue = rawValue != null ? String(rawValue).trim() : '';
+      // 前端兜底：Supabase 无数据时，用基金代码/名称推断板块
+      if (!rawValue) {
+        const frontendSector = getFundSector(row.code, row.fundName);
+        rawValue = frontendSector || '';
+      }
+      const relatedSector = rawValue;
       const quote = relatedSector ? sectorQuoteByLabel?.[relatedSector] : null;
       const quoteName = quote?.name != null ? String(quote.name).trim() : '';
       const quotePct = quote?.pct == null ? null : Number(quote.pct);
@@ -886,7 +896,7 @@ export default function PcFundTable({
     };
   }, [showPortalHeader]);
 
-  const FundNameCell = ({ info, showFullFundName, onOpenCardDialog }) => {
+  const FundNameCell = ({ info, showFullFundName, onOpenCardDialog, onViewEtfHoldings }) => {
     const original = info.row.original || {};
     const code = original.code;
     const isUpdated = original.isUpdated;
@@ -945,7 +955,7 @@ export default function PcFundTable({
         )}
         {showFavoriteButton ? (
           <button
-            className={`icon-button fav-button ${isFavorites ? 'active' : ''}`}
+            className={`icon-button icon-button-ripple fav-button ${isFavorites ? 'active' : ''}`}
             onClick={(e) => {
               e.stopPropagation?.();
               onToggleFavoriteRef.current?.(original);
@@ -955,6 +965,36 @@ export default function PcFundTable({
             <StarIcon width="18" height="18" filled={isFavorites} />
           </button>
         ) : null}
+        {isEtfFeederFund(code) && onViewEtfHoldings && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation?.();
+              onViewEtfHoldings(original);
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '3px 8px',
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(168, 85, 247, 0.05))',
+              border: '1px solid rgba(168, 85, 247, 0.25)',
+              borderRadius: 12,
+              fontSize: 11,
+              color: 'rgb(168, 85, 247)',
+              cursor: 'pointer',
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
+            }}
+            title="查看目标ETF持仓成分股"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            ETF
+          </button>
+        )}
         <div
           className="title-text"
           role={onOpenCardDialog ? 'button' : undefined}
@@ -1036,6 +1076,7 @@ export default function PcFundTable({
             info={info}
             showFullFundName={showFullFundName}
             onOpenCardDialog={getFundCardProps ? (row) => setCardDialogRow(row) : undefined}
+            onViewEtfHoldings={onViewEtfHoldings}
           />
         ),
         meta: {
@@ -1091,7 +1132,11 @@ export default function PcFundTable({
                     if (!item.name) return null;
                     const { variant, className: themeCls } = getTagThemeBadgeProps(item.theme);
                     return (
-                      <Badge key={`${item.name}-${idx}`} variant={variant} className={cn('font-normal', themeCls)}>
+                      <Badge
+                        key={`${item.name}-${idx}`}
+                        variant={variant}
+                        className={cn('font-normal badge-hover', themeCls)}
+                      >
                         {item.name}
                       </Badge>
                     );
@@ -1116,7 +1161,11 @@ export default function PcFundTable({
         cell: (info) => {
           const original = info.row.original || {};
           const code = original.code;
-          const value = (code && (relatedSectorByCode?.[code] ?? relatedSectorCacheRef.current.get(code))) || '';
+          let value = (code && (relatedSectorByCode?.[code] ?? relatedSectorCacheRef.current.get(code))) || '';
+          // 前端兜底
+          if (!value && code) {
+            value = getFundSector(code, original.fundName) || '';
+          }
           const display = value || '—';
           const labelKey = value ? String(value).trim() : '';
           const quote = labelKey ? sectorQuoteByLabel?.[labelKey] : null;
@@ -1723,7 +1772,7 @@ export default function PcFundTable({
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <span>操作</span>
             <button
-              className="icon-button"
+              className="icon-button icon-button-ripple"
               onClick={(e) => {
                 e.stopPropagation?.();
                 setSettingModalOpen(true);
@@ -1756,7 +1805,7 @@ export default function PcFundTable({
           return (
             <div className="row" style={{ justifyContent: 'center', gap: 4, padding: '8px 0' }}>
               <button
-                className="icon-button danger"
+                className="icon-button icon-button-ripple danger"
                 onClick={handleClick}
                 title="删除"
                 style={{
@@ -1792,6 +1841,7 @@ export default function PcFundTable({
       setAllSelected,
       toggleSelected,
       onFundTagsClick,
+      onViewEtfHoldings,
     ],
   );
 
@@ -1895,7 +1945,7 @@ export default function PcFundTable({
   const renderTableHeader = (forPortal = false) => {
     if (!headerGroup) return null;
     return (
-      <div className="table-header-row table-header-row-scroll">
+      <div className="table-header-row table-header-row-scroll table-header-glow">
         {headerGroup.headers.map((header) => {
           const style = getCommonPinningStyles(header.column, true);
           const isNameColumn =
@@ -2134,7 +2184,7 @@ export default function PcFundTable({
                   }}
                 >
                   <div
-                    className={`table-row table-row-scroll ${virtualRow.index % 2 === 1 ? 'row-even' : ''}`}
+                    className={`table-row table-row-scroll table-row-enhanced ${virtualRow.index % 2 === 1 ? 'row-even' : ''}`}
                   >
                     {row.getVisibleCells().map((cell) => {
                       const columnId = cell.column.id || cell.column.columnDef?.accessorKey;
@@ -2191,7 +2241,7 @@ export default function PcFundTable({
                       enableAnimation={!activeId}
                     >
                       <div
-                        className={`table-row table-row-scroll ${index % 2 === 1 ? 'row-even' : ''}`}
+                        className={`table-row table-row-scroll table-row-enhanced ${index % 2 === 1 ? 'row-even' : ''}`}
                       >
                         {row.getVisibleCells().map((cell) => {
                           const columnId = cell.column.id || cell.column.columnDef?.accessorKey;
@@ -2233,7 +2283,7 @@ export default function PcFundTable({
                       enableAnimation={false}
                     >
                       <div
-                        className={`table-row table-row-scroll ${index % 2 === 1 ? 'row-even' : ''}`}
+                        className={`table-row table-row-scroll table-row-enhanced ${index % 2 === 1 ? 'row-even' : ''}`}
                       >
                         {row.getVisibleCells().map((cell) => {
                           const columnId = cell.column.id || cell.column.columnDef?.accessorKey;
@@ -2393,6 +2443,7 @@ function FundDetailDialog({ blockDialogClose, cardDialogRow, getFundCardProps, s
       <DialogContent
         className="sm:max-w-2xl max-h-[88vh] flex flex-col p-0 overflow-hidden"
         onPointerDownOutside={blockDialogClose ? (e) => e.preventDefault() : undefined}
+        aria-describedby={undefined}
       >
         <DialogHeader className="flex-shrink-0 flex flex-row items-center justify-between gap-2 space-y-0 px-6 pb-4 pt-6 text-left border-b border-[var(--border)]">
           <DialogTitle className="text-base font-semibold text-[var(--text)]">
@@ -2462,7 +2513,7 @@ function BatchRemoveHeader({
 
       <div style={{ display: 'inline-flex', alignItems: 'center' }}>
         <button
-          className="icon-button"
+          className="icon-button icon-button-ripple"
           onClick={(e) => { e.stopPropagation?.(); onMove?.(); }}
           title="移动分组"
           disabled={!!disabled}
@@ -2485,7 +2536,7 @@ function BatchRemoveHeader({
           <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>移动分组</span>
         </button>
         <button
-          className="icon-button"
+          className="icon-button icon-button-ripple danger"
           onClick={(e) => { e.stopPropagation?.(); onRemove?.(); }}
           title="批量删除"
           disabled={!!disabled}

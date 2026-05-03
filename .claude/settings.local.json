@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "jin10": {
+      "serverUrl": "https://mcp.jin10.com/mcp",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${JIN10_MCP_TOKEN}"
+      }
+    }
+  }
+}

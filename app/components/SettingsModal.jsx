@@ -24,6 +24,8 @@ export default function SettingsModal({
   showMarketIndexMobile = true,
   showGroupFundSearchPc = true,
   showGroupFundSearchMobile = true,
+  onOpenAlerts,
+  onOpenPortfolioAnalysis,
 }) {
   const [sliderDragging, setSliderDragging] = useState(false);
   const [resetWidthConfirmOpen, setResetWidthConfirmOpen] = useState(false);
@@ -91,6 +93,7 @@ export default function SettingsModal({
         overlayClassName={`modal-overlay ${sliderDragging ? 'modal-overlay-translucent' : ''} z-[9999]`}
         className="!p-0 z-[10000]"
         showCloseButton={false}
+        aria-describedby={undefined}
       >
         <div className="glass card modal">
           <div className="title" style={{ marginBottom: 12 }}>
@@ -131,6 +134,66 @@ export default function SettingsModal({
               </div>
             )}
           </div>
+
+          {/* 涨跌提醒入口 */}
+          {onOpenAlerts && (
+            <div className="form-group" style={{ marginBottom: 16 }}>
+              <div className="muted" style={{ marginBottom: 8, fontSize: '0.8rem' }}>涨跌提醒</div>
+              <button
+                type="button"
+                className="chip"
+                onClick={onOpenAlerts}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                }}
+              >
+                <span>设置涨跌幅阈值提醒</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* 持仓分析入口 */}
+          {onOpenPortfolioAnalysis && (
+            <div className="form-group" style={{ marginBottom: 16 }}>
+              <div className="muted" style={{ marginBottom: 8, fontSize: '0.8rem' }}>持仓分析</div>
+              <button
+                type="button"
+                className="chip"
+                onClick={onOpenPortfolioAnalysis}
+                style={{
+                  width: '100%',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                }}
+              >
+                <span>AI 智能分析持仓状况</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           {!isMobile && setContainerWidth && (
             <div className="form-group" style={{ marginBottom: 16 }}>

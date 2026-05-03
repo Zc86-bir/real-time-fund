@@ -23,6 +23,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { getTagThemeBadgeProps } from './AddTagDialog';
 import { cn } from '@/lib/utils';
+import { isEtfFeederFund } from '@/app/data/etfFeederMap';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -82,6 +83,7 @@ export default function FundCard({
   masked = false,
   fundTags = [],
   onFundTagsClick,
+  onViewEtfHoldings,
 }) {
   const holding = holdings[f?.code];
   const profit = getHoldingProfit?.(f, holding) ?? null;
@@ -137,7 +139,7 @@ export default function FundCard({
 
   return (
     <motion.div
-      className="glass card"
+      className="glass card card-hover card-shine"
       style={{
         position: 'relative',
         zIndex: 1,
@@ -148,7 +150,7 @@ export default function FundCard({
         <div className="title">
           {showFavoriteButton ? (
             <button
-              className={`icon-button fav-button ${favorites?.has(f.code) ? 'active' : ''}`}
+              className={`icon-button icon-button-ripple fav-button ${favorites?.has(f.code) ? 'active' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleFavorite?.(f.code);
@@ -210,7 +212,7 @@ export default function FundCard({
                       <Badge
                         key={`${item.name}-${idx}`}
                         variant={variant}
-                        className={cn('font-normal text-[11px]', themeCls)}
+                        className={cn('font-normal text-[11px] badge-hover', themeCls)}
                         style={{ cursor: onFundTagsClick ? 'pointer' : 'default' }}
                         onClick={(e) => {
                           if (onFundTagsClick) {
@@ -240,7 +242,7 @@ export default function FundCard({
           </div>
           <div className="row" style={{ gap: 4 }}>
             <button
-              className="icon-button danger"
+              className="icon-button icon-button-ripple danger"
               onClick={() => onRemoveFund?.(f)}
               title="删除"
               style={{
@@ -329,7 +331,7 @@ export default function FundCard({
             <div className="stat" style={{ flexDirection: 'column', gap: 4, minWidth: 0 }}>
               <span className="label">关联板块</span>
               <span
-                className="value"
+                className="value related-sector-badge"
                 title={relatedSectorDisplay}
                 style={{
                   fontSize: '15px',
@@ -351,6 +353,36 @@ export default function FundCard({
               delta={relatedSectorPctValue}
             />
           ) : null}
+        </div>
+      )}
+
+      {isEtfFeederFund(f?.code) && onViewEtfHoldings && (
+        <div style={{ marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => onViewEtfHoldings(f)}
+            className="badge-hover"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 12px',
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(168, 85, 247, 0.05))',
+              border: '1px solid rgba(168, 85, 247, 0.25)',
+              borderRadius: 20,
+              fontSize: 12,
+              color: 'rgb(168, 85, 247)',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+            title="查看目标ETF持仓成分股"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            查看ETF持仓
+          </button>
         </div>
       )}
 

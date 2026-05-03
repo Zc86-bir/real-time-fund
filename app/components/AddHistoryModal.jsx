@@ -101,6 +101,7 @@ export default function AddHistoryModal({ fund, onClose, onConfirm }) {
         overlayClassName="modal-overlay"
         overlayStyle={{ zIndex: 9998 }}
         style={{ maxWidth: '420px', zIndex: 9999, width: '90vw' }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">添加历史记录</DialogTitle>
 

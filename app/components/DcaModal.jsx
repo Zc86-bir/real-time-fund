@@ -142,7 +142,7 @@ export default function DcaModal({ fund, plan, onClose, onConfirm, onReset }) {
     } else {
       setFirstDate(plan.firstDate || computeFirstDate('monthly', null, null));
     }
-  }, [plan]);
+  }, [plan, monthlyDay, weeklyDay]);
 
   useEffect(() => {
     if (skipNextAutoComputeRef.current) {
@@ -233,6 +233,7 @@ export default function DcaModal({ fund, plan, onClose, onConfirm, onReset }) {
             zIndex: 999,
             width: '90vw',
           }}
+          aria-describedby={undefined}
         >
           <DialogTitle className="sr-only">定投设置</DialogTitle>
           <div

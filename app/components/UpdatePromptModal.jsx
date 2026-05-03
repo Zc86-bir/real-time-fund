@@ -13,6 +13,7 @@ export default function UpdatePromptModal({ updateContent, open, onClose, onRefr
         role="dialog"
         aria-modal="true"
         aria-label="更新提示"
+        aria-describedby={undefined}
       >
         <DialogHeader>
           <DialogTitle style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>

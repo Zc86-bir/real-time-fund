@@ -65,6 +65,7 @@ export default function AddFundToGroupModal({ allFunds, currentGroupCodes, holdi
         className="glass card modal"
         overlayClassName="modal-overlay"
         style={{ maxWidth: '500px', width: '90vw', zIndex: 99 }}
+        aria-describedby={undefined}
       >
         <style>{`
           .group-manage-list-container::-webkit-scrollbar {

@@ -57,6 +57,7 @@ export default function SyncPersonalSettingsModal({
         overlayClassName="modal-overlay"
         overlayStyle={{ zIndex: 10002 }}
         style={{ maxWidth: '460px', width: '90vw', zIndex: 10003 }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">同步个性化设置</DialogTitle>
 

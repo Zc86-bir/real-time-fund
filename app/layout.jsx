@@ -1,5 +1,6 @@
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
+import './enhancements.css';
 import AnalyticsGate from './components/AnalyticsGate';
 import KeepScreenAwake from './components/KeepScreenAwake';
 import PwaRegister from './components/PwaRegister';

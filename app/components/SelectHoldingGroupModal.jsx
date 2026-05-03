@@ -41,6 +41,7 @@ export default function SelectHoldingGroupModal({
         className="glass card modal"
         overlayClassName="modal-overlay"
         style={{ maxWidth: '420px', width: '90vw', zIndex: 99 }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">选择持仓分组</DialogTitle>
         <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

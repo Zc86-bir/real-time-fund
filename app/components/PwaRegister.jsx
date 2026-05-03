@@ -11,7 +11,6 @@ export default function PwaRegister() {
     const isPwaSupported =
       'serviceWorker' in navigator &&
       'BeforeInstallPromptEvent' in window;
-    console.log('PWA 支持:', isPwaSupported);
     if (
       typeof window === 'undefined' ||
       !('serviceWorker' in navigator) ||

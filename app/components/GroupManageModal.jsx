@@ -63,7 +63,7 @@ function GroupManageReorderItem({
         }}
       />
       <button
-        className="icon-button danger"
+        className="icon-button icon-button-ripple danger"
         onClick={() => onDeleteClick(item.id, item.name)}
         title="删除分组"
         style={{ width: '36px', height: '36px', flexShrink: 0 }}
@@ -145,6 +145,7 @@ export default function GroupManageModal({ groups, onClose, onSave }) {
           onInteractOutside={(event) => {
             if (deleteConfirm) event.preventDefault();
           }}
+          aria-describedby={undefined}
         >
           <DialogTitle asChild>
             <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

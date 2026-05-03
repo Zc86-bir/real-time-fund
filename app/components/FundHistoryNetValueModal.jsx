@@ -300,6 +300,7 @@ export default function FundHistoryNetValueModal({ open, onOpenChange, code, the
           flexDirection: 'column',
           zIndex: 9999,
         }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">历史净值</DialogTitle>
         {header}

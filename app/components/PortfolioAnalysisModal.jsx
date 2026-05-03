@@ -52,7 +52,7 @@ export default function PortfolioAnalysisModal({ open, onClose, analysis }) {
         setAiError(e.message);
         setAiLoading(false);
       });
-  }, [open]);
+  }, [open, analysis]);
 
   if (!analysis) return null;
 

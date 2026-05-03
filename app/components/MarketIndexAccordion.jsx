@@ -293,7 +293,7 @@ export default function MarketIndexAccordion({
     } catch {
       // ignore
     }
-  }, [selectedCodes]);
+  }, [selectedCodes, onCustomSettingsChange]);
   // 用户已选择的指数列表（按 selectedCodes 顺序）
   const visibleIndices = selectedCodes.length
     ? selectedCodes

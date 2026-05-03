@@ -462,6 +462,7 @@ export default function FundTagsEditDialog({
           className="glass card modal trade-modal flex max-h-[min(85vh,640px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[420px]"
           overlayClassName="modal-overlay"
           style={{ maxWidth: '420px', width: '90vw', zIndex: 99 }}
+          aria-describedby={undefined}
         >
           <DialogTitle className="sr-only">编辑标签</DialogTitle>
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">

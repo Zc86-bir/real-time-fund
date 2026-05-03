@@ -121,6 +121,7 @@ export default function MoveGroupModal({
           onInteractOutside={(event) => {
             if (confirmOverwriteOpen) event.preventDefault();
           }}
+          aria-describedby={undefined}
         >
           <DialogHeader className="flex-shrink-0 px-6 pb-4 pt-6 text-left border-b border-[var(--border)]">
             <DialogTitle className="text-base font-semibold text-[var(--text)]">

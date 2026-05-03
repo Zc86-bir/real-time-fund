@@ -45,6 +45,7 @@ export default function SelectFundSingleModal({
         overlayClassName="modal-overlay"
         overlayStyle={{ zIndex: 999 }}
         style={{ maxWidth: '500px', width: '90vw', zIndex: 999 }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

@@ -31,6 +31,7 @@ import MoveGroupModal from './MoveGroupModal';
 import SuccessModal from './SuccessModal';
 import { ArrowUpToLineIcon, CloseIcon, DragIcon, FolderPlusIcon, LinkIcon, PencilIcon, SettingsIcon, StarIcon, TrashIcon } from './Icons';
 import { fetchFundPeriodReturns, fetchRelatedSectors, fetchRelatedSectorLiveQuote } from '@/app/api/fund';
+import { getFundSector } from '@/app/data/fundSectorMap';
 import { storageStore } from '../stores';
 import { asyncPool } from '@/app/lib/asyncHelper';
 import { Badge } from '@/components/ui/badge';
@@ -186,7 +187,7 @@ function MobileEditBatchHeader({
         {hasMoveFunds ? (
           <button
             type="button"
-            className="icon-button"
+            className="icon-button icon-button-ripple"
             onClick={(e) => {
               e.stopPropagation?.();
               onMove?.();
@@ -213,7 +214,7 @@ function MobileEditBatchHeader({
         ) : null}
         <button
           type="button"
-          className="icon-button"
+          className="icon-button icon-button-ripple"
           onClick={(e) => {
             e.stopPropagation?.();
             onRemove?.();
@@ -325,6 +326,7 @@ function SortableRow({ row, children, isTableDragging, disabled }) {
  * @param {(open: boolean) => void} [props.onFundCardDrawerOpenChange] - 基金详情底部 Drawer 打开/关闭时通知父级（用于隐藏底栏等）
  * @param {(open: boolean) => void} [props.onMobileSettingModalOpenChange] - 移动端表格「个性化设置」弹框打开/关闭时通知父级（用于隐藏底栏等）
  * @param {(row: any) => void} [props.onFundTagsClick] - 点击标签列时打开编辑标签
+ * @param {(fund: any) => void} [props.onViewEtfHoldings] - 点击查看ETF持仓
  */
 export default function MobileFundTable({
   data = [],
@@ -353,6 +355,7 @@ export default function MobileFundTable({
   onFundCardDrawerOpenChange,
   onMobileSettingModalOpenChange,
   onFundTagsClick,
+  onViewEtfHoldings,
 }) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editSelectedCodes, setEditSelectedCodes] = useState(() => new Set());
@@ -935,8 +938,14 @@ export default function MobileFundTable({
   const withRelatedSectorFund = useCallback(
     (row) => {
       if (!row || !row.code) return row;
-      const rawValue = relatedSectorByCode?.[row.code] ?? relatedSectorCacheRef.current.get(row.code) ?? '';
-      const relatedSector = rawValue != null ? String(rawValue).trim() : '';
+      let rawValue = relatedSectorByCode?.[row.code] ?? relatedSectorCacheRef.current.get(row.code) ?? '';
+      rawValue = rawValue != null ? String(rawValue).trim() : '';
+      // 前端兜底：Supabase 无数据时，用基金代码/名称推断板块
+      if (!rawValue) {
+        const frontendSector = getFundSector(row.code, row.fundName);
+        rawValue = frontendSector || '';
+      }
+      const relatedSector = rawValue;
       const quote = relatedSector ? sectorQuoteByLabel?.[relatedSector] : null;
       const quoteName = quote?.name != null ? String(quote.name).trim() : '';
       const quotePct = quote?.pct == null ? null : Number(quote.pct);
@@ -1076,7 +1085,7 @@ export default function MobileFundTable({
       return { ...FALLBACK_WIDTHS, fundName: NAME_CELL_WIDTH + w };
     }
     return { ...FALLBACK_WIDTHS };
-  }, [tableContainerWidth, mobileColumnOrder, mobileColumnVisibility, isEditMode]);
+  }, [tableContainerWidth, mobileColumnOrder, mobileColumnVisibility, isEditMode, FALLBACK_WIDTHS]);
 
   const handleResetMobileColumnOrder = () => {
     setMobileColumnOrder([...MOBILE_NON_FROZEN_COLUMN_IDS]);
@@ -1541,7 +1550,11 @@ export default function MobileFundTable({
         cell: (info) => {
           const original = info.row.original || {};
           const code = original.code;
-          const value = (code && (relatedSectorByCode?.[code] ?? relatedSectorCacheRef.current.get(code))) || '';
+          let value = (code && (relatedSectorByCode?.[code] ?? relatedSectorCacheRef.current.get(code))) || '';
+          // 前端兜底
+          if (!value && code) {
+            value = getFundSector(code, original.fundName) || '';
+          }
           const display = value || '—';
           const labelKey = value ? String(value).trim() : '';
           const quote = labelKey ? sectorQuoteByLabel?.[labelKey] : null;
@@ -1977,8 +1990,6 @@ export default function MobileFundTable({
       },
     ],
     [
-      currentTab,
-      favorites,
       columnWidthMap,
       showFullFundName,
       getFundCardProps,
@@ -1995,7 +2006,6 @@ export default function MobileFundTable({
       masked,
       onReorder,
       data,
-      selectableCodes,
       batchSelectableCount,
       setAllEditSelected,
       onFundTagsClick,
@@ -2078,7 +2088,7 @@ export default function MobileFundTable({
       positions.push(acc);
     }
     snapPositionsRef.current = positions;
-  }, [headerGroup?.headers?.length, columnWidthMap, mobileColumnOrder, isEditMode]);
+  }, [headerGroup.headers, columnWidthMap, mobileColumnOrder, isEditMode]);
 
   useEffect(() => {
     const el = tableContainerRef.current;

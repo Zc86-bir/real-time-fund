@@ -493,6 +493,7 @@ export default function MyEarningsCalendarPage({ open, onOpenChange, series = []
       <DialogContent
         showCloseButton={false}
         className={cn('my-earnings-drawer-content flex max-h-[92vh] w-[min(650px,calc(100vw-24px))] flex-col gap-0 overflow-hidden p-0')}
+        aria-describedby={undefined}
       >
         <DialogHeader className="flex-shrink-0 flex flex-row items-center justify-between gap-2 space-y-0 px-5 pb-3 pt-4 text-left border-b border-[var(--border)]">
           <DialogTitle className="text-base font-semibold text-[var(--text)]">我的收益</DialogTitle>

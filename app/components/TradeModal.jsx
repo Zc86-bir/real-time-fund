@@ -227,6 +227,7 @@ export default function TradeModal({ type, fund, holding, onClose, onConfirm, pe
         overlayClassName="modal-overlay"
         overlayStyle={{ zIndex: 99 }}
         style={{ maxWidth: '420px', width: '90vw', zIndex: 99 }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{isBuy ? '加仓' : '减仓'}</DialogTitle>
         <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

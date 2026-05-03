@@ -255,7 +255,7 @@ export default function HomePage() {
     if (!enabledIds.includes(sortBy)) {
       setSortBy(enabledIds[0]);
     }
-  }, [sortRules, sortBy]);
+  }, [sortRules, sortBy, setSortBy, setSortRules]);
 
   // 视图模式
   const [viewMode, setViewMode] = useState('list'); // card, list
@@ -495,15 +495,15 @@ export default function HomePage() {
       setMobileFundDrawerOpen(false);
       setMobileTableSettingModalOpen(false);
     }
-  }, [isMobile]);
+  }, [isMobile, setMobileFundDrawerOpen, setMobileTableSettingModalOpen]);
 
   const handleFundCardDrawerOpenChange = useCallback((open) => {
     setMobileFundDrawerOpen(Boolean(open));
-  }, []);
+  }, [setMobileFundDrawerOpen]);
 
   const handleMobileSettingModalOpenChange = useCallback((open) => {
     setMobileTableSettingModalOpen(Boolean(open));
-  }, []);
+  }, [setMobileTableSettingModalOpen]);
 
   const shouldShowMarketIndex = isMobile ? showMarketIndexMobile : showMarketIndexPc;
   const shouldShowGroupFundSearch = isMobile ? showGroupFundSearchMobile : showGroupFundSearchPc;
@@ -544,7 +544,7 @@ export default function HomePage() {
   }, [swipedFundCode]);
 
   // 检查交易日状态
-  const checkTradingDay = async () => {
+  const checkTradingDay = useCallback(async () => {
     const now = nowInTz();
     const isWeekend = now.day() === 0 || now.day() === 6;
 
@@ -577,14 +577,14 @@ export default function HomePage() {
     } catch (e) {
       setIsTradingDay(!isWeekend);
     }
-  };
+  }, [todayStr]);
 
   useEffect(() => {
     checkTradingDay();
     // 每30分钟检查一次
     const timer = setInterval(checkTradingDay, 60000 * 30);
     return () => clearInterval(timer);
-  }, []);
+  }, [checkTradingDay]);
 
   const activeGroupId =
     currentTab !== 'all' &&
@@ -1868,7 +1868,7 @@ export default function HomePage() {
         syncUserConfig(userIdRef.current, false, payload, false);
       }
     }, 1000 * 2); // 往云端同步的防抖时间
-  }, []);
+  }, [collectLocalPayload, getComparablePayload, syncUserConfig]);
 
   const { setOnSync } = useStorageStore();
 
@@ -2109,7 +2109,7 @@ export default function HomePage() {
       if (next.size === 0) setCurrentTab('all');
       return next;
     });
-  }, [storageHelper]);
+  }, [storageHelper, setFavorites]);
 
   const toggleCollapse = useCallback((code) => {
     setCollapsedCodes(prev => {
@@ -2270,7 +2270,7 @@ export default function HomePage() {
     });
 
     showToast(`已生成 ${newPending.length} 笔定投买入`, 'success');
-  }, [isTradingDay, dcaPlans, funds, todayStr, storageHelper, groups]);
+  }, [isTradingDay, dcaPlans, funds, todayStr, storageHelper, groups, setDcaPlans, setPendingTrades]);
 
   useEffect(() => {
     if (!isTradingDay) return;
@@ -2716,6 +2716,7 @@ export default function HomePage() {
     });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- complex init effect with many stable setters/initializers
   useEffect(() => {
     let cancelled = false;
     const init = async () => {
@@ -2854,7 +2855,7 @@ export default function HomePage() {
       if (!changed) return prev;
       return next;
     });
-  }, [holdings, groups]);
+  }, [holdings, groups, setGroupHoldings]);
 
   // 记录用户当前选择的分组（仅本地存储，不同步云端）
   useEffect(() => {
@@ -2947,7 +2948,7 @@ export default function HomePage() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [fetchCloudConfig, setLoginModalOpen, storageHelper]);
 
   // 实时同步
   useEffect(() => {
@@ -2971,7 +2972,7 @@ export default function HomePage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, applyCloudConfig, getComparablePayload]);
 
 
 
@@ -3046,7 +3047,7 @@ export default function HomePage() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [refreshMs]);
+  }, [refreshMs, refreshAll]);
 
   const performSearch = async (val) => {
     if (!val.trim()) {
@@ -3187,7 +3188,7 @@ export default function HomePage() {
     }
   };
 
-  const refreshAll = async (codes) => {
+  const refreshAll = useCallback(async (codes) => {
     // 【步骤 1】重入锁检查：防止多个刷新任务同时运行导致状态混乱
     if (refreshingRef.current) return;
     refreshingRef.current = true;
@@ -3546,14 +3547,14 @@ export default function HomePage() {
         console.warn('待交易处理出错', e);
       }
     }
-  };
+  }, []);
 
   const toggleViewMode = () => {
     const nextMode = viewMode === 'card' ? 'list' : 'card';
     applyViewMode(nextMode);
   };
 
-  const requestRemoveFund = (fund) => {
+  const requestRemoveFund = useCallback((fund) => {
     const gid =
       currentTab !== 'all' && currentTab !== 'fav' && groups.some((g) => g.id === currentTab)
         ? currentTab
@@ -3594,7 +3595,8 @@ export default function HomePage() {
       fundDetailDialogCloseRef.current?.();
       removeFund(fund.code);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- requestRemoveFund reads many closure values; stabilized via useCallback
+  }, [currentTab, groups, groupHoldings, pendingTrades, dcaPlans, transactions, setFundDeleteConfirm, holdings, removeFund]);
 
   /** @returns {boolean|void} false 表示已弹出二次确认，由确认成功回调再清空选中；true 表示已立即执行，调用方可清空多选 */
   const requestRemoveFundsFromCurrentGroup = (codes) => {
@@ -5605,6 +5607,7 @@ export default function HomePage() {
       clearConfirm,
       donateOpen,
       fundDeleteConfirm,
+      fundDeleteBulkConfirm,
       isUpdateModalOpen,
       weChatOpen,
       scanModalOpen,
@@ -5662,7 +5665,7 @@ export default function HomePage() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [settingsOpen]);
+  }, [settingsOpen, setSettingsOpen]);
 
   const containerClassName = [
     'container',
@@ -5834,6 +5837,7 @@ export default function HomePage() {
     toggleEarningsCollapse,
     maskAmounts,
     openEtfHoldings,
+    openFundTagsEdit,
   ]);
 
   return (

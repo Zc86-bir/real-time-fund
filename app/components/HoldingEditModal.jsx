@@ -177,6 +177,7 @@ export default function HoldingEditModal({ fund, holding, onClose, onSave, onOpe
         className="glass card modal"
         overlayClassName="modal-overlay"
         style={{ maxWidth: '400px', zIndex: 999, width: '90vw' }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">编辑持仓</DialogTitle>
         <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

@@ -21,6 +21,7 @@ export default function HoldingActionModal({ fund, onClose, onAction, hasHistory
         className="glass card modal"
         overlayClassName="modal-overlay"
         style={{ maxWidth: '320px', zIndex: 99 }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">持仓操作</DialogTitle>
         <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>

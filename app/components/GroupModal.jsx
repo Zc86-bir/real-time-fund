@@ -20,6 +20,7 @@ export default function GroupModal({ onClose, onConfirm }) {
       <DialogContent
         overlayClassName="modal-overlay z-[9999]"
         className={cn('!p-0 z-[10000] max-w-[280px] sm:max-w-[280px]')}
+        aria-describedby={undefined}
       >
         <div className="glass card modal !max-w-[280px] !w-full">
           <div className="flex items-center justify-between mb-5">

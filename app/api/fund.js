@@ -1481,3 +1481,107 @@ export const parseFundTextWithLLM = async (text) => {
     return null;
   }
 };
+
+/**
+ * 解析 FundArchives HTML 响应，提取 ETF 持仓数据
+ */
+function parseEtfHoldingsHtml(html) {
+  if (!html) return [];
+
+  const tbodyMatch = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) return [];
+
+  const rows = [];
+  const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  let trMatch;
+  while ((trMatch = trRegex.exec(tbodyMatch[1])) !== null) {
+    const row = trMatch[1];
+    const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    const cells = [];
+    let tdMatch;
+    while ((tdMatch = tdRegex.exec(row)) !== null) {
+      cells.push(tdMatch[1]);
+    }
+    if (cells.length >= 9) {
+      // Cell layout from actual HTML:
+      // [0]序号 [1]股票代码(a标签) [2]股票名称(a标签) [3]最新价 [4]涨跌幅
+      // [5]相关资讯 [6]占净值比例 [7]持股数(万股) [8]持仓市值(万元)
+      const codeMatch = cells[1]?.match(/>(\d+)<\/a>/);
+      const nameMatch = cells[2]?.match(/>([^<]+)<\/a>/);
+      const weightText = cells[6]?.replace(/<[^>]*>/g, '').replace('%', '').trim();
+      const sharesText = cells[7]?.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
+      const marketValueText = cells[8]?.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
+
+      rows.push({
+        code: codeMatch ? codeMatch[1] : '',
+        name: nameMatch ? nameMatch[1] : '',
+        weight: weightText ? Number(weightText) : null,
+        shares: sharesText ? Number(sharesText) : null,
+        marketValue: marketValueText ? Number(marketValueText) : null,
+        pctChange: null, // 持仓数据为季报静态数据，无实时涨跌幅
+      });
+    }
+  }
+  return rows;
+}
+
+/**
+ * 获取 ETF 持仓成分股（使用 JSONP script 注入，绕过 CORS 限制）
+ * @param {string} etfCode - ETF代码，如 "510300"
+ * @param {Object} [options]
+ * @param {number} [options.cacheTime=300000] - 缓存时间（默认5分钟）
+ * @returns {Promise<Array<{code: string, name: string, weight: number, shares: number, marketValue: number, pctChange: number}> | null>}
+ */
+export const fetchEtfHoldings = async (etfCode, { cacheTime = 5 * 60 * 1000 } = {}) => {
+  if (!etfCode || typeof document === 'undefined' || !document.body) return null;
+
+  try {
+    const data = await getQueryClient().fetchQuery({
+      queryKey: qk.etfHoldings(etfCode),
+      queryFn: async () => {
+        const url = `https://fundf10.eastmoney.com/FundArchivesDatas.aspx?type=jjcc&code=${etfCode}&topline=10&year=&month=&rt=${Date.now()}`;
+        const result = await runEastmoneyF10ScriptForApidata(url);
+        if (!result.ok || !result.apidata || !result.apidata.content) return null;
+
+        return parseEtfHoldingsHtml(result.apidata.content);
+      },
+      staleTime: cacheTime,
+    });
+
+    return data || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
+ * 获取 ETF 基本信息（名称、代码、净值等）
+ * @param {string} secid - 格式 "市场.代码"
+ * @returns {Promise<{name: string, code: string, price: number, pct: number} | null>}
+ */
+export const fetchEtfBasicInfo = async (secid) => {
+  if (!secid || typeof fetch === 'undefined') return null;
+
+  try {
+    const res = await fetch(
+      `https://push2delay.eastmoney.com/api/qt/stock/get?secid=${encodeURIComponent(secid)}&fields=f57,f58,f43,f170`
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    const d = json?.data;
+    if (!d) return null;
+
+    const f170 = d.f170;
+    const pct = f170 != null && Number.isFinite(Number(f170)) ? Number(f170) / 100 : null;
+    const price = d.f43 != null && Number.isFinite(Number(d.f43)) ? Number(d.f43) / 100 : null;
+
+    return {
+      name: d.f58 != null ? String(d.f58) : '',
+      code: d.f57 != null ? String(d.f57) : '',
+      price,
+      pct,
+    };
+  } catch (e) {
+    return null;
+  }
+};

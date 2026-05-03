@@ -186,6 +186,7 @@ export default function AddTagDialog({ open, onOpenChange, onAdd }) {
         className="glass card modal trade-modal"
         overlayClassName="modal-overlay"
         style={{ maxWidth: '420px', zIndex: 999, width: '90vw' }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">添加标签</DialogTitle>
 

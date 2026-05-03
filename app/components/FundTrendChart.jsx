@@ -258,7 +258,7 @@ export default function FundTrendChart({ code, isExpanded, onToggleExpand, trans
         }
       ]
     };
-  }, [data, transactions, lineColor, primaryColor, upColor, chartColors, theme, hiddenGrandSeries, percentageData, range]);
+  }, [data, transactions, lineColor, primaryColor, upColor, chartColors, hiddenGrandSeries, percentageData, range]);
 
   const options = useMemo(() => {
     const colors = getChartThemeColors(theme);
@@ -315,12 +315,25 @@ export default function FundTrendChart({ code, isExpanded, onToggleExpand, trans
       onHover: (event, chartElement, chart) => {
         const target = event?.native?.target;
         const currentChart = chart || chartRef.current;
-        if (!currentChart) return;
+        if (!currentChart || !currentChart.ctx) return;
 
-        const tooltipActive = currentChart.tooltip?._active ?? [];
-        const activeElements = currentChart.getActiveElements
-          ? currentChart.getActiveElements()
-          : [];
+        // 检查 chart 是否有效
+        let tooltipActive = [];
+        try {
+          tooltipActive = currentChart.tooltip?._active ?? [];
+        } catch (e) {
+          // tooltip 可能不可用
+        }
+
+        let activeElements = [];
+        try {
+          activeElements = currentChart.getActiveElements
+            ? currentChart.getActiveElements()
+            : [];
+        } catch (e) {
+          // getActiveElements 可能不可用
+        }
+
         const hasActive =
           (chartElement && chartElement.length > 0) ||
           (tooltipActive && tooltipActive.length > 0) ||
@@ -337,8 +350,6 @@ export default function FundTrendChart({ code, isExpanded, onToggleExpand, trans
         } else {
           setActiveIndex(null);
         }
-
-        // 仅用于桌面端 hover 改变光标，不在这里做 2 秒清除，避免移动端 hover 事件不稳定
       },
       onClick: (_event, elements) => {
         if (Array.isArray(elements) && elements.length > 0) {
@@ -374,16 +385,23 @@ export default function FundTrendChart({ code, isExpanded, onToggleExpand, trans
 
         hoverTimeoutRef.current = setTimeout(() => {
           if (!chart) return;
-          chart.setActiveElements([]);
-          if (chart.tooltip) {
-            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+          // 检查 chart 是否仍然有效（canvas 还存在）
+          if (!chart.ctx || !chart.canvas) return;
+          try {
+            chart.setActiveElements([]);
+            if (chart.tooltip) {
+              chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            }
+            chart.update('none'); // 使用 'none' 模式避免重绘问题
+            clearActiveIndexRef.current?.();
+          } catch (e) {
+            // 图表可能已被销毁，忽略错误
           }
-          chart.update();
-          clearActiveIndexRef.current?.();
         }, 2000);
       }
     },
     afterDraw: (chart) => {
+      if (!chart || !chart.ctx || !chart.scales) return;
       const ctx = chart.ctx;
       const datasets = chart.data.datasets;
       const primaryColor = colors.primary;

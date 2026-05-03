@@ -153,6 +153,7 @@ export default function FundConvertModal({
           flexDirection: 'column',
           zIndex: 999,
         }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">转换</DialogTitle>
 

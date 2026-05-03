@@ -36,6 +36,7 @@ export default function ConfirmModal({
         overlayClassName="!z-[12000]"
         showCloseButton={false}
         className="!z-[12010] max-w-[400px] flex flex-col gap-5 p-6"
+        aria-describedby={undefined}
       >
         <DialogHeader className="flex flex-row items-center gap-3 text-left">
           {icon || (

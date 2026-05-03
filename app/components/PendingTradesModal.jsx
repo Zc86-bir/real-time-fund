@@ -28,6 +28,7 @@ export default function PendingTradesModal({
         overlayClassName="modal-overlay"
         overlayStyle={{ zIndex: 998 }}
         style={{ maxWidth: '420px', zIndex: 999, width: '90vw' }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">待交易队列</DialogTitle>
 

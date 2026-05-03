@@ -75,6 +75,7 @@ export default function TransactionHistoryModal({
           flexDirection: 'column',
           zIndex: 999, // 保持原有层级，确保在其他弹框之上
         }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">交易记录</DialogTitle>
 

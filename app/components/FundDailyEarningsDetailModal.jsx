@@ -294,6 +294,7 @@ export default function FundDailyEarningsDetailModal({
           flexDirection: 'column',
           zIndex: 9999,
         }}
+        aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
         {header}
