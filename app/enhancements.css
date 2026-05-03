@@ -1,0 +1,893 @@
+/* ============================================
+   前端美化增强样式 - enhancements.css
+   包含：动效、光影、微交互、视觉层次
+   ============================================ */
+
+/* ============================================
+   1. 全局动效与过渡
+   ============================================ */
+
+/* 平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 全局淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(34, 211, 238, 0.5);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* 页面内容入场动画 */
+.content > * {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.content > *:nth-child(1) { animation-delay: 0.05s; }
+.content > *:nth-child(2) { animation-delay: 0.1s; }
+.content > *:nth-child(3) { animation-delay: 0.15s; }
+.content > *:nth-child(4) { animation-delay: 0.2s; }
+.content > *:nth-child(5) { animation-delay: 0.25s; }
+
+/* ============================================
+   2. 增强卡片效果
+   ============================================ */
+
+/* 悬浮卡片效果 */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(34, 211, 238, 0.1);
+}
+
+.card-hover:hover::before {
+  opacity: 1;
+}
+
+[data-theme="light"] .card-hover:hover {
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(8, 145, 178, 0.15);
+}
+
+/* 卡片光泽效果 */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  transform: rotate(30deg) translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.card-shine:hover::after {
+  transform: rotate(30deg) translateX(100%);
+}
+
+/* ============================================
+   3. 增强按钮效果
+   ============================================ */
+
+/* 主按钮脉冲效果 */
+.button-pulse {
+  position: relative;
+  overflow: visible;
+}
+
+.button-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--primary), var(--accent));
+  opacity: 0;
+  filter: blur(8px);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.button-pulse:hover::before {
+  opacity: 0.5;
+}
+
+.button-pulse:active {
+  transform: scale(0.98);
+}
+
+/* 图标按钮涟漪效果 */
+.icon-button-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.icon-button-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.icon-button-ripple:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* 幽灵按钮 */
+.button-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.button-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.button-ghost:hover {
+  border-color: var(--primary);
+  background: rgba(34, 211, 238, 0.05);
+}
+
+.button-ghost:hover::before {
+  transform: translateX(100%);
+}
+
+/* ============================================
+   4. 加载与空状态
+   ============================================ */
+
+/* 骨架屏动画 */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+[data-theme="light"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* 空状态装饰 */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  position: relative;
+}
+
+.empty-state::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(
+    circle,
+    rgba(34, 211, 238, 0.1) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  opacity: 0.5;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   5. 表格增强
+   ============================================ */
+
+/* 表格行悬浮效果 */
+.table-row-enhanced {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.table-row-enhanced::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.table-row-enhanced:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(4px);
+}
+
+.table-row-enhanced:hover::before {
+  opacity: 1;
+}
+
+[data-theme="light"] .table-row-enhanced:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* 表格头部固定效果 */
+.table-header-glow {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+[data-theme="light"] .table-header-glow {
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom-color: rgba(8, 145, 178, 0.2);
+}
+
+/* ============================================
+   6. 标签与徽章
+   ============================================ */
+
+/* 渐变标签 */
+.badge-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #0f172a;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
+}
+
+/* 状态徽章 */
+.badge-status {
+  position: relative;
+  padding-left: 18px;
+}
+
+.badge-status::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+/* 标签悬浮效果 */
+.badge-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.badge-hover:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.25);
+}
+
+/* 关联板块样式 */
+.related-sector-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(34, 211, 238, 0.05));
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+
+.related-sector-badge:hover {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.15), rgba(34, 211, 238, 0.08));
+  border-color: rgba(34, 211, 238, 0.3);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .related-sector-badge {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(8, 145, 178, 0.05));
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+[data-theme="light"] .related-sector-badge:hover {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(8, 145, 178, 0.08));
+  border-color: rgba(8, 145, 178, 0.3);
+}
+
+/* ============================================
+   7. 输入框增强
+   ============================================ */
+
+/* 聚焦发光效果 */
+.input-glow {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border);
+}
+
+.input-glow:focus {
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 3px rgba(34, 211, 238, 0.1),
+    0 0 20px rgba(34, 211, 238, 0.2);
+  outline: none;
+}
+
+/* 搜索框动画 */
+.search-input-animated {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-input-animated:focus {
+  transform: scale(1.02);
+}
+
+/* ============================================
+   8. 导航栏增强
+   ============================================ */
+
+/* 导航栏滚动效果 */
+.navbar-scrolled {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .navbar-scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* 导航项下划线动画 */
+.nav-link {
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--primary);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* ============================================
+   9. 模态框与抽屉
+   ============================================ */
+
+/* 模态框入场动画 */
+.modal-enter {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+/* 抽屉滑入动画 */
+.drawer-enter-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.drawer-enter-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* 模态框内容光效 */
+.modal-glow {
+  position: relative;
+}
+
+.modal-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0.3;
+  filter: blur(20px);
+  z-index: -1;
+}
+
+/* ============================================
+   10. 数值变化动画
+   ============================================ */
+
+/* 数值更新闪烁 */
+.value-flash {
+  animation: flash-value 0.5s ease;
+}
+
+@keyframes flash-value {
+  0%, 100% {
+    background: transparent;
+  }
+  50% {
+    background: rgba(34, 211, 238, 0.2);
+  }
+}
+
+/* 上涨/下跌动画 */
+.value-up {
+  animation: value-rise 0.5s ease;
+}
+
+.value-down {
+  animation: value-fall 0.5s ease;
+}
+
+@keyframes value-rise {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes value-fall {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   11. 滚动条美化
+   ============================================ */
+
+/* 自定义滚动条 */
+.scrollbar-beautiful {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.scrollbar-beautiful::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-beautiful::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-beautiful::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-beautiful::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .scrollbar-beautiful {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+[data-theme="light"] .scrollbar-beautiful::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .scrollbar-beautiful::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   12. 响应式工具类
+   ============================================ */
+
+/* 隐藏但保留布局 */
+.invisible-layout {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 文字渐变 */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 玻璃拟态变体 */
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 悬停缩放 */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* 悬停提升 */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   13. 工具提示增强
+   ============================================ */
+
+/* 工具提示 */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* ============================================
+   14. 选中状态
+   ============================================ */
+
+/* 选中项发光 */
+.selected-glow {
+  position: relative;
+}
+
+.selected-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0.5;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+/* ============================================
+   15. 打印样式
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .glass,
+  .glass-strong,
+  .glass-subtle {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* ============================================
+   16. 金十快讯组件
+   ============================================ */
+
+.jin10-news {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+.jin10-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 12px;
+}
+
+.jin10-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.jin10-refresh-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  transition: all 0.2s;
+}
+
+.jin10-refresh-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.jin10-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.jin10-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.jin10-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.jin10-time {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  min-width: 45px;
+  font-family: monospace;
+}
+
+.jin10-content {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.jin10-content a {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.jin10-content a:hover {
+  text-decoration: underline;
+}
+
+.jin10-important {
+  font-size: 10px;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: 4px;
+  padding: 1px 4px;
+  white-space: nowrap;
+}
+
+.jin10-skeleton .jin10-time {
+  width: 45px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 4px;
+}
+
+.jin10-skeleton .jin10-content {
+  width: 100%;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.jin10-retry-btn {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 6px;
+  color: #fbbf24;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.jin10-retry-btn:hover {
+  background: rgba(251, 191, 36, 0.25);
+}
+
